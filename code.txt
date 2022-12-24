@@ -1,0 +1,230 @@
+//config lcd
+#include <Wire.h> // responsável pela comunicação com a interface i2c
+#include <LiquidCrystal_I2C.h> // responsável pela comunicacao com o LCD
+LiquidCrystal_I2C lcd(0x27,2,1,0,4,5,6,7,3, POSITIVE);
+//------------------------------------------------------------------------
+//sensor umidade   
+const int pinoSensor = 12; //PINO LÓGICO UTILIZADO PELO SENSOR
+int valorLido; //VARIÁVEL QUE ARMAZENA O PERCENTUAL DE UMIDADE DO SOLO
+const int bomba = 13;
+//------------------------------------------------------------------------
+//serial bluetooth
+#include "BluetoothSerial.h"
+
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+BluetoothSerial SerialBT;
+char valorRecebido;
+char palavra2 = 't' ;
+char palavra1 = 'o' ;
+const int btngreen=2;
+const int btnred=4;
+const int led1=18; //led ligado
+const int led2=19; //led desligado
+ int teste=0;
+int botaoestadov=0;
+int botaoestador=0;
+int automatico=0;
+String estadobomba; 
+//------------------------------------------------------------------------
+
+
+  
+void setup(){
+ Serial.begin(9600); //INICIALIZA A SERIAL
+ SerialBT.begin("iControl"); // bluetoofh
+ Serial.println("O dispositivo já pode ser pareado!");
+ lcd.begin (16,2); // ou 20,4 se for o display 20x4
+  pinMode(btngreen, INPUT);//
+  pinMode(btnred, INPUT);//
+ pinMode(led1, OUTPUT);//
+ pinMode(led2, OUTPUT);//
+ pinMode(bomba, OUTPUT);//
+     lcd.clear();
+     lcd.setCursor(0,0);
+     lcd.print("   Sistema de ");
+     lcd.setCursor(0,1);
+     lcd.print("   Umidade");
+     
+  delay(5000);
+  
+}
+ 
+void loop(){ 
+  // -------------------------------------------------------------------------------cell
+  valorRecebido =(char)SerialBT.read();
+    lcd.setBacklight(HIGH);
+  if (Serial.available()) {
+   //SerialBT.write(Serial.read());
+  
+  }
+  if (SerialBT.available()) {
+    Serial.print(valorRecebido);
+    if(valorRecebido== palavra1)
+    {
+    /* Serial.println("Relay ONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+     //SerialBT.println("Relay ON");
+     lcd.clear();
+     //lcd.setCursor(0,0);
+     //lcd.print("Teste Esp32");
+     lcd.setCursor(0,1);
+     lcd.print("Bomba DESLIGADA");
+     
+     digitalWrite(13, HIGH);*/
+     if(valorLido<=50){
+    digitalWrite(bomba, LOW);
+     lcd.setCursor(0,1);
+     lcd.print("Bomba Ligada     ");
+     Serial.println("Bomba Ligada!");
+     Serial.println("BTN KODULAR Ligado!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  botaoestadov=botaoestadov+1;
+    digitalWrite(led1, HIGH);
+   digitalWrite(led2, LOW);
+  estadobomba = "Bomba Ligada!" ;
+     }
+    }
+    
+    if(valorRecebido == palavra2 )
+    {
+     /*Serial.println("Relay OFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+     //SerialBT.println("Relay OFF");
+     digitalWrite(13, LOW);
+     lcd.clear();
+     //lcd.setCursor(0,0);
+     //lcd.print("Teste Esp32");
+     lcd.setCursor(0,1);
+     lcd.print("Bomba LIGADA");*/
+     digitalWrite(bomba, HIGH);
+     lcd.setCursor(0,1);
+     lcd.print("Bomba Desligada");
+     Serial.println("Bomba Desligada!");
+  digitalWrite(led2, HIGH);
+   digitalWrite(led1, LOW);
+     botaoestadov=0;
+     automatico=0;
+     Serial.println("BTN KODULAR DESLIGADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+     estadobomba = "Bomba Desligada!" ;
+    }    
+    
+     
+  
+  } 
+  
+  // -------------------------------------------------------------------------------cell
+
+    
+   Wire.begin();  
+   valorLido = analogRead(pinoSensor);
+   Serial.print("Valor lido: ");
+   Serial.println(valorLido); 
+    
+   valorLido = map(valorLido, 2750, 4095, 100, 0);
+   Serial.print("Umidade do solo: "); //IMPRIME O TEXTO NO MONITOR SERIAL
+   Serial.print(valorLido); //IMPRIME NO MONITOR SERIAL O PERCENTUAL DE UMIDADE DO SOLO
+   Serial.println("%"); //IMPRIME O CARACTERE NO MONITOR SERIAL
+   //SerialBT.println("Valor lido: ");
+   SerialBT.println(valorLido);
+   SerialBT.println(String(estadobomba));
+    //Serial.print(String(estadobomba));
+
+   lcd.clear();
+
+   //-----------------------------------------------------
+   //inicializa o display (16 colunas x 2 linhas
+   //lcd.begin (16,2); // ou 20,4 se for o display 20x4
+   //lcd.setBacklightPin(3,POSITIVE); // NEGATIVE É LETRA PRETA E FUNDO ESCURO
+   // define o backlight com ligado
+   //lcd.setBacklight(HIGH);
+   //-----------------------------------------------------
+
+   lcd.home();
+   lcd.setCursor(0,0);
+   lcd.print("Umidade: ");
+   lcd.setCursor(9,0);
+   if(valorLido>=100){
+    lcd.print(100);
+    }else{
+      lcd.print(valorLido);
+      }
+   lcd.setCursor(15,0);
+   lcd.print("%");
+
+/*  if(valorLido < 50){
+   lcd.setCursor(0,1);
+     lcd.print("Esta seco     ");
+   } else {
+     lcd.setCursor(0,1);
+     lcd.print("Esta umido     ");
+   }
+*/
+   if(valorLido >= 20 && automatico==0 && botaoestadov==0){
+     digitalWrite(bomba, HIGH);
+     lcd.setCursor(0,1);
+     lcd.print("Bomba Desligada     ");
+     Serial.println("Bomba Desligada!");
+	   digitalWrite(led2, HIGH);
+	   digitalWrite(led1, LOW);
+     estadobomba = "Bomba Desligada!" ;
+   } else {
+     digitalWrite(bomba, LOW);
+     lcd.setCursor(0,1);
+     lcd.print("Bomba Ligada     ");
+     Serial.println("Bomba Ligada!");
+     automatico=automatico+1;
+	   digitalWrite(led1, HIGH);
+	   digitalWrite(led2, LOW);
+     estadobomba = "Bomba Ligada!" ;
+   }
+
+    
+   if(digitalRead(btngreen)==HIGH){
+	   if(valorLido<=50){
+    digitalWrite(bomba, LOW);
+     lcd.setCursor(0,1);
+     lcd.print("Bomba Ligada     ");
+     Serial.println("Bomba Ligada!");
+     Serial.println("Botão VERDE Ligado!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	 botaoestadov=botaoestadov+1;
+	  digitalWrite(led1, HIGH);
+	 digitalWrite(led2, LOW);
+  estadobomba = "Bomba Ligada!" ;
+	   }
+   }
+   
+  if(digitalRead(btnred)==HIGH){
+
+    digitalWrite(bomba, HIGH);
+     lcd.setCursor(0,1);
+     lcd.print("Bomba Desligada");
+     Serial.println("Bomba Desligada!");
+	 digitalWrite(led2, HIGH);
+	 digitalWrite(led1, LOW);
+     botaoestadov=0;
+     automatico=0;
+     Serial.println("BOTÃO VERMELHO LIGADO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+     estadobomba = "Bomba Desligada!" ;
+   }
+ 
+   
+   if(valorLido>90 ){
+      digitalWrite(bomba, HIGH);
+     lcd.setCursor(0,1);
+     lcd.print("Bomba Desligada");
+     Serial.println("Bomba Desligada!");
+	 digitalWrite(led2, HIGH);
+	 digitalWrite(led1, LOW); 
+     botaoestadov=0;
+     automatico=0;
+     estadobomba ="Bomba Desligada!" ;
+      }
+   delay(1000); //intervalo de 1s 
+  
+// ------------------------------------------------------------------
+  
+}
+
+//techtcholas
+//evotcholas
+//devstcholas
+//proters
