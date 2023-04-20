@@ -17,7 +17,7 @@ Se expandido, pode ser visto com diversas funcionalidades no mercado atual.
 
 
 ## Instalação
-Infelizmente seu código foi perdido, porém, para utilizá-lo, você pode instalar o APK presente no repósitorio, conectar o bluetooth de seu celular ao módulo bluetooth de um
+Infelizmente seu código no kodular foi perdido, porém, para utilizá-lo, você pode instalar o APK presente no repósitorio, conectar o bluetooth de seu celular ao módulo bluetooth de um
 arduino ERC 32, que contenha um sensor de umidade conectado.
 
 
