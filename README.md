@@ -12,7 +12,7 @@ Aplicativo + Programação pra Arduino ERC 32 integrado com Bluetooth para contr
 
 ## O que é este projeto?
 O iControl foi um projeto de controle de umidade e nível de água, realizado por Fernando Acraini, Gabriel Felipe e João Dias na ETEC Euro Albino. 
-Ele foi realizado com Arduino ERC 32 para uso do módulo do bluetooth, juntamente de um aplicativo feito em Kodular, que infelizmente temos apenas imagens de seu código.
+Ele foi realizado com Arduino ESP 32 para uso do módulo do bluetooth, juntamente de um aplicativo feito em Kodular, que infelizmente temos apenas imagens de seu código.
 Se expandido, pode ser visto com diversas funcionalidades no mercado atual.
 
 
